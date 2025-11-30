@@ -11,6 +11,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import debugRoutes from './routes/debugRoutes.js';
 
 import errorHandler from './middleware/errorHandler.js';
+import { verifyTransporter } from './utils/sendEmail.js';
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -138,11 +139,18 @@ process.on('SIGINT', async () => {
 
 // Start server
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
     console.log(`❤️  Health check: http://localhost:${PORT}/api/health`);
+    // Verify email transporter once at startup to log issues
+    try {
+      const ok = await verifyTransporter();
+      if (!ok) console.warn('⚠️ Email transporter not verified; email sending may fail in production.');
+    } catch (err) {
+      console.error('Email verification check failed:', err);
+    }
   });
 });
 

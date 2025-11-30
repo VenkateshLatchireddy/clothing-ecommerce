@@ -87,7 +87,10 @@ const createOrder = async (req, res) => {
       try {
         const populatedOrder = await Order.findById(order._id).populate('user');
         try {
-          await sendOrderEmail(populatedOrder);
+          const res = await sendOrderEmail(populatedOrder);
+          if (!res || res.success !== true) {
+            console.warn('Email sending failed (background), result:', res);
+          }
         } catch (emailError) {
           console.error('Email sending failed (background):', emailError);
         }
