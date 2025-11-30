@@ -68,30 +68,6 @@ Kids
         Pagination
 
 
-📂 Project Structure    
-
-clothing-ecommerce/
-│
-├── backend/
-│   ├── config/db.js
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── utils/sendEmail.js
-│   ├── seedProducts.js
-│   ├── server.js
-│   └── .env
-│
-└── frontend/
-    ├── src/
-    ├── components/
-    ├── context/
-    ├── pages/
-    ├── services/
-    └── main.jsx
-
-
-
 ## 🛠 Tech Stack
 ### Frontend
 - React 18
