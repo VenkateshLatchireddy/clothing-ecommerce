@@ -21,32 +21,42 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const storedUser = sessionStorage.getItem('user');
+      // Check both localStorage and sessionStorage for backward compatibility
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       
-      if (storedUser) {
+      if (storedUser && token) {
         const userData = JSON.parse(storedUser);
         
         try {
           const response = await authAPI.getMe();
           if (response.data.success) {
             setUser(response.data.user);
-            sessionStorage.setItem('user', JSON.stringify(response.data.user));
+            // Ensure token is in localStorage for production
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', token);
           } else {
             throw new Error('Invalid token');
           }
         } catch (error) {
           console.error('Token validation failed:', error);
-          sessionStorage.removeItem('user');
-          setUser(null);
+          clearAuthData();
         }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      sessionStorage.removeItem('user');
-      setUser(null);
+      clearAuthData();
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearAuthData = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    setUser(null);
   };
 
   const login = async (email, password) => {
@@ -57,9 +67,20 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         const userData = response.data.user;
+        const token = response.data.token;
+        
+        if (!token) {
+          throw new Error('No token received from server');
+        }
+
+        // Set user state
         setUser(userData);
-        sessionStorage.setItem('user', JSON.stringify(userData));
-        console.log('✅ User logged in and stored in sessionStorage');
+        
+        // Store in localStorage for production (persists across refreshes)
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        
+        console.log('✅ User logged in and token stored');
         return { success: true };
       } else {
         return {
@@ -84,8 +105,16 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.success) {
         const userData = response.data.user;
+        const token = response.data.token;
+        
+        if (!token) {
+          throw new Error('No token received from server');
+        }
+
         setUser(userData);
-        sessionStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        
         return { success: true };
       } else {
         return {
@@ -105,10 +134,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setUser(null);
-    sessionStorage.removeItem('user');
+    clearAuthData();
     localStorage.removeItem('guestCart');
-    console.log('✅ User logged out and sessionStorage cleared');
+    console.log('✅ User logged out and storage cleared');
     window.location.href = '/';
   };
 
