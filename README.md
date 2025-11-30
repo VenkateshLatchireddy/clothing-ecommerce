@@ -2,10 +2,31 @@
 
 A full-stack MERN e-commerce application for clothing products.
 
-## 🚀 Live Demo
-- **Frontend**: [Vercel Link]()
-- **Backend**: [Render Link]()
-- **API Documentation**: [Add when available]()
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s1.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s2.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s3.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s4.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s5.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s6.png)
+
+![Sky Clothing Store](https://raw.githubusercontent.com/VenkateshLatchireddy/clothing-ecommerce/main/Assets/s7.png)
+
+
+🚀 Live Demo
+🌐 Frontend (Vercel)
+
+👉 https://clothing-ecommerce-dusky.vercel.app
+
+🔌 Backend (Render)
+
+👉 https://clothing-ecommerce-r3jy.onrender.com 
+
 
 ## 📋 Features
 - ✅ User Authentication (Register/Login/Logout)
@@ -13,7 +34,63 @@ A full-stack MERN e-commerce application for clothing products.
 - ✅ Shopping Cart Management
 - ✅ Order Processing
 - ✅ Responsive Design
-- ✅ Secure Payments
+- ✅ Order Confirmation Email
+      ✔ Localhost → Gmail SMTP
+      ✔ Deployment (Render) → SendGrid API
+- ✅ Fully deployed backend + frontend
+
+
+
+Kids
+
+🖼️ 3. Cloudinary Image Hosting (High Performance)
+
+        Product images are uploaded and served using Cloudinary, providing:
+
+        Fast global CDN delivery
+
+        Auto-optimized images
+
+        Secure image URLs
+
+        Zero load on the backend server
+
+👕 Product Management
+
+        20+ seeded clothing products
+
+        Categories: Men, Women, Kids
+
+        Search (name/description)
+
+        Filters: Category, Size, Price
+
+        Pagination
+
+
+📂 Project Structure    
+
+clothing-ecommerce/
+│
+├── backend/
+│   ├── config/db.js
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── utils/sendEmail.js
+│   ├── seedProducts.js
+│   ├── server.js
+│   └── .env
+│
+└── frontend/
+    ├── src/
+    ├── components/
+    ├── context/
+    ├── pages/
+    ├── services/
+    └── main.jsx
+
+
 
 ## 🛠 Tech Stack
 ### Frontend
@@ -35,29 +112,6 @@ A full-stack MERN e-commerce application for clothing products.
 - Backend: Render
 - Database: MongoDB Atlas
 
-## 📁 Project Structure  
-
-
-
-clothing-ecommerce/
-├── backend/
-│ ├── controllers/
-│ ├── models/
-│ ├── routes/
-│ ├── middleware/
-│ └── server.js
-├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── context/
-│ │ ├── pages/
-│ │ └── services/
-│ ├── public/
-│ └── package.json
-└── README.md
-
-
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -71,8 +125,6 @@ npm install
 cp .env.example .env
 # Add your MongoDB URI and JWT secret to .env
 npm run dev 
-
-
 
 Frontend Setup
 
@@ -99,17 +151,15 @@ VITE_API_URL=http://localhost:5000
 
 📝 API Endpoints 
 
-
-
 Method	   Endpoint      	            Description
 
 POST	/api/auth/register	            User registration
 POST	/api/auth/login	                User login
-GET	    /api/products	                    Get all products
-GET	    /api/products/:id	                Get single product
-GET	    /api/cart	                        Get user cart
+GET	    /api/products	                Get all products
+GET	    /api/products/:id	            Get single product
+GET	    /api/cart	                    Get user cart
 POST    /api/cart/add	                Add to cart
-PUT	    /api/cart/update	                Update cart item
+PUT	    /api/cart/update	            Update cart item
 POST	/api/orders             	    Create order   
 
 🚀 Deployment  
