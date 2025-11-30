@@ -6,13 +6,16 @@ import { getAuthItem, clearAuthStorageBoth } from '../utils/authStorage';
 // If not set in production, attempt to fallback to the frontend origin + '/api' endpoint (same host).
 const defaultDev = 'http://localhost:5000';
 let API_URL = import.meta.env.VITE_API_URL || defaultDev;
+// Normalize API_URL: remove any trailing '/api' or trailing slash to avoid double '/api' later
+API_URL = API_URL.replace(/\/api\/?$/, '');
+API_URL = API_URL.replace(/\/$/, '');
 if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
   // Fallback to Render backend URL if Vite env not configured during build
   API_URL = 'https://clothing-ecommerce-r3jy.onrender.com';
   console.warn('⚠️ VITE_API_URL is not set in production build; falling back to Render backend URL. Set VITE_API_URL in Vercel to avoid rebuild hardcoding.');
 }
 
-console.log('🔗 API URL:', API_URL); // Debug log
+console.log('🔗 API origin:', API_URL); // Debug log
 
 const api = axios.create({
   baseURL: API_URL,
@@ -60,11 +63,15 @@ api.interceptors.response.use(
     const url = error.config?.url;
     const base = error.config?.baseURL || API_URL;
     const status = error.response?.status;
+    const code = error.code || error?.request?._state || undefined;
     const data = error.response?.data;
+    const message = error.message;
     const fullUrl = `${base || ''}${url || ''}`;
     console.error('❌ API Error:', {
       url: fullUrl,
       status,
+      code,
+      message,
       data,
       headers: error.config?.headers
     });

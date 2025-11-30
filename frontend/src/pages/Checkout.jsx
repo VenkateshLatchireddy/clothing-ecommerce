@@ -51,6 +51,14 @@ const Checkout = () => {
     }
 
     setLoading(true);
+    // Ensure any guest cart items are synced before createOrder so server-side cart isn't empty
+    if (user) {
+      try {
+        await syncGuestCart();
+      } catch (syncErr) {
+        console.warn('Guest cart sync failed before placing order:', syncErr);
+      }
+    }
     setError("");
 
     try {
@@ -64,6 +72,11 @@ const Checkout = () => {
     } catch (err) {
       // Detailed debug logging
       console.error('Order create error (raw):', err);
+      if (err?.code === 'ECONNABORTED') {
+        setError('Order request timed out. Please try again.');
+        setLoading(false);
+        return;
+      }
       // If server returns 'Cart is empty' try syncing guest cart then retry once
       const message = err.response?.data?.message || err.message || 'Order failed. Try again.';
       if (message && message.toLowerCase().includes('cart is empty') && user) {
@@ -91,6 +104,8 @@ const Checkout = () => {
         // Show full details for 400: include the message and any additional data
         const extra = err.response?.data?.details || err.response?.data?.message || JSON.stringify(err.response?.data);
         setError(`${message}${extra ? ' — ' + extra : ''}`);
+      } else if (!err.response) {
+        setError(`Network error: ${err.message || 'Unknown error'}`);
       } else {
         setError(message);
       }

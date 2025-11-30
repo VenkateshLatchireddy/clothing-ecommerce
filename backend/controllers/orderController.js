@@ -9,6 +9,9 @@ import { sendOrderEmail } from '../utils/sendEmail.js';
 const createOrder = async (req, res) => {
   try {
     const { shippingAddress } = req.body;
+    if (process.env.ALLOW_DEBUG_ENDPOINTS === 'true') {
+      console.log('🔁 createOrder payload body:', JSON.stringify(req.body));
+    }
 
     // Get user's cart - FIXED: using req.userId instead of req.user.id
     const cart = await Cart.findOne({ user: req.userId }).populate('items.product');
