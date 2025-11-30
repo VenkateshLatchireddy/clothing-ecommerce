@@ -2,7 +2,18 @@ import axios from 'axios';
 import { getAuthItem, clearAuthStorageBoth } from '../utils/authStorage';
 
 // Backend URL without /api
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// When deploying, set VITE_API_URL environment variable to backend URL.
+// If not set in production, attempt to fallback to the frontend origin + '/api' endpoint (same host).
+const defaultDev = 'http://localhost:5000';
+let API_URL = import.meta.env.VITE_API_URL || defaultDev;
+if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
+  try {
+    // Use same origin for API in production if it's co-located
+    API_URL = `${window.location.origin}`;
+  } catch (err) {
+    API_URL = defaultDev;
+  }
+}
 
 console.log('🔗 API URL:', API_URL); // Debug log
 

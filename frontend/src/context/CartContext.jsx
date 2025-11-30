@@ -14,11 +14,24 @@ export const CartProvider = ({ children }) => {
 
   // Load cart depending on login state
   useEffect(() => {
-    if (user) {
-      loadUserCart();
-    } else {
-      loadGuestCart();
-    }
+    const prepareCart = async () => {
+      if (user) {
+        // If we have guest items saved locally, sync them to the server
+        const guestData = JSON.parse(localStorage.getItem('guestCart') || '[]');
+        if (guestData.length > 0) {
+          try {
+            await syncGuestCart();
+          } catch (err) {
+            console.error('Failed to sync guest cart on login:', err);
+          }
+        }
+        await loadUserCart();
+      } else {
+        loadGuestCart();
+      }
+    };
+
+    prepareCart();
   }, [user]);
 
   const loadUserCart = async () => {
