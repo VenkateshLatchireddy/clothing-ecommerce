@@ -13,7 +13,17 @@ const createOrder = async (req, res) => {
     // Get user's cart - FIXED: using req.userId instead of req.user.id
     const cart = await Cart.findOne({ user: req.userId }).populate('items.product');
     console.log('🔍 createOrder for user:', req.userId, 'cartItems:', cart?.items?.length || 0);
+    // Log items for debugging
+    if (cart?.items?.length > 0) {
+      console.log('🛒 cart items details:');
+      cart.items.forEach((item, idx) => {
+        const pid = item.product?._id || item.product;
+        const name = item.product?.name || item.name || '(no name)';
+        console.log(`  ${idx + 1}. productId: ${pid}, name: ${name}, size: ${item.size}, qty: ${item.quantity}`);
+      });
+    }
     if (!cart || cart.items.length === 0) {
+      console.warn('⚠️ createOrder failed: cart empty for user:', req.userId);
       return res.status(400).json({
         success: false,
         message: 'Cart is empty'

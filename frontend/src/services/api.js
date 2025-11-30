@@ -17,7 +17,7 @@ console.log('🔗 API URL:', API_URL); // Debug log
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: false, // Changed to false since we're using token-based auth
-  timeout: 15000, // Increased timeout
+  timeout: 30000, // Increased timeout to 30s
 });
 
 // Request interceptor - FIXED for token-based auth

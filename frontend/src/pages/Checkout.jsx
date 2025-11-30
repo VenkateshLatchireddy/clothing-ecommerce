@@ -62,6 +62,8 @@ const Checkout = () => {
         navigate(`/order/${res.data.order._id}`);
       }
     } catch (err) {
+      // Detailed debug logging
+      console.error('Order create error (raw):', err);
       // If server returns 'Cart is empty' try syncing guest cart then retry once
       const message = err.response?.data?.message || err.message || 'Order failed. Try again.';
       if (message && message.toLowerCase().includes('cart is empty') && user) {
@@ -85,6 +87,10 @@ const Checkout = () => {
         const attempted = (err.config?.baseURL || '') + (err.config?.url || '');
         setError(`Server API not found (404) — verify VITE_API_URL and backend availability. Attempted: ${attempted}`);
         console.warn('API 404 on createOrder; attempted URL:', attempted);
+      } else if (err.response?.status === 400) {
+        // Show full details for 400: include the message and any additional data
+        const extra = err.response?.data?.details || JSON.stringify(err.response?.data);
+        setError(`${message}${extra ? ' — ' + extra : ''}`);
       } else {
         setError(message);
       }
