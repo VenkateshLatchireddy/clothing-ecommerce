@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { getAuthItem, setAuthItem, removeAuthItem, clearAuthStorageBoth } from '../utils/authStorage';
 
 const AuthContext = createContext();
 
@@ -21,9 +22,13 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      // Check both localStorage and sessionStorage for backward compatibility
-      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      // Use sessionStorage only so auth doesn't persist across closed tabs
+      const storedUser = getAuthItem('user');
+      const token = getAuthItem('token');
+
+      // If older localStorage tokens exist, clear them to avoid unexpected persisted logins
+      // Remove old localStorage tokens to avoid accidental persistence
+      try { localStorage.removeItem('token'); localStorage.removeItem('user'); } catch {}
       
       if (storedUser && token) {
         const userData = JSON.parse(storedUser);
@@ -32,9 +37,9 @@ export const AuthProvider = ({ children }) => {
           const response = await authAPI.getMe();
           if (response.data.success) {
             setUser(response.data.user);
-            // Ensure token is in localStorage for production
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-            localStorage.setItem('token', token);
+              // Ensure token is stored in session storage (doesn't persist across tab close)
+              setAuthItem('user', JSON.stringify(response.data.user));
+              setAuthItem('token', token);
           } else {
             throw new Error('Invalid token');
           }
@@ -52,10 +57,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const clearAuthData = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    // Remove from both to be safe
+    clearAuthStorageBoth();
     setUser(null);
   };
 
@@ -76,9 +79,9 @@ export const AuthProvider = ({ children }) => {
         // Set user state
         setUser(userData);
         
-        // Store in localStorage for production (persists across refreshes)
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
+        // Store in sessionStorage so login doesn't persist after tab close
+        setAuthItem('user', JSON.stringify(userData));
+        setAuthItem('token', token);
         
         console.log('✅ User logged in and token stored');
         return { success: true };
@@ -112,8 +115,8 @@ export const AuthProvider = ({ children }) => {
         }
 
         setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
+        setAuthItem('user', JSON.stringify(userData));
+        setAuthItem('token', token);
         
         return { success: true };
       } else {

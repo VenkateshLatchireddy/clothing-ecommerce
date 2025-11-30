@@ -10,11 +10,11 @@ const CartItem = ({ item, onUpdate, onRemove }) => {
     item.product?.image ||
     "https://via.placeholder.com/200x200?text=No+Image";
 
-  const price =
-    Number(item.price) ||
-    Number(item.product?.price) ||
-    Number(item.productPrice) ||
-    0;
+  let rawPrice = item?.price ?? item?.product?.price ?? item?.productPrice ?? 0;
+  if (typeof rawPrice === 'string') {
+    rawPrice = rawPrice.replace(/[^0-9.-]+/g, '');
+  }
+  const price = Number(rawPrice) || 0;
 
   const qty = Number(item.quantity) || 1;
   const size = item.size || "N/A";

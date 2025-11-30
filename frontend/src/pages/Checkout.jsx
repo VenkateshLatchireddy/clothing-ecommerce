@@ -30,11 +30,11 @@ const Checkout = () => {
     setShipping({ ...shipping, [e.target.name]: e.target.value });
   };
 
-  const safePrice = (item) =>
-    Number(item.price) ||
-    Number(item.product?.price) ||
-    Number(item.productPrice) ||
-    0;
+  const safePrice = (item) => {
+    let price = item?.price ?? item?.product?.price ?? item?.productPrice ?? 0;
+    if (typeof price === 'string') price = price.replace(/[^0-9.-]+/g, '');
+    return Number(price) || 0;
+  };
 
   const safeTotal = (item) =>
     (safePrice(item) * (Number(item.quantity) || 1)).toFixed(2);

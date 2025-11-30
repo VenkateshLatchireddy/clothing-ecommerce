@@ -17,8 +17,8 @@ function App() {
   useEffect(() => {
     console.log('🔍 App.jsx rendered');
     console.log('🌐 API URL:', import.meta.env.VITE_API_URL);
-    console.log('🔑 Token exists:', !!localStorage.getItem('token'));
-    console.log('👤 User exists:', !!localStorage.getItem('user'));
+    console.log('🔑 Token exists (session):', !!sessionStorage.getItem('token'));
+    console.log('👤 User exists (session):', !!sessionStorage.getItem('user'));
   }, []);
 
   return (

@@ -187,7 +187,6 @@ const Register = () => {
       </form>
       <p style={{ 
         textAlign: 'center', 
-        color: '#2c3e50',
         fontSize: '16px',
         fontWeight: '500',
         padding: '10px',

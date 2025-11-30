@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAuthItem, clearAuthStorageBoth } from '../utils/authStorage';
 
 // Backend URL without /api
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -14,8 +15,8 @@ const api = axios.create({
 // Request interceptor - FIXED for token-based auth
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage (for production)
-    const token = localStorage.getItem('token');
+    // Get token using our storage helper (session in dev, local in production)
+    const token = getAuthItem('token');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -48,10 +49,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log('🔒 401 Unauthorized - clearing auth data');
       // Clear all auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
+      // Clear both storages for 401 condition
+      clearAuthStorageBoth();
       
       // Only redirect if not already on login page
       if (!window.location.pathname.includes('/login')) {

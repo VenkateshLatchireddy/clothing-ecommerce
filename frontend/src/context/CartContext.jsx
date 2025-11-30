@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { getAuthItem } from '../utils/authStorage';
 import { cartAPI } from "../services/api";
 
 const CartContext = createContext();
@@ -23,7 +24,7 @@ export const CartProvider = ({ children }) => {
   const loadUserCart = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = getAuthItem('token');
       
       if (!token) {
         console.log('⚠️ No token found for cart load');
@@ -164,14 +165,22 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = Number(item.price) || 0;
-      const qty = Number(item.quantity) || 0;
+      // Prefer explicit item.price (guest cart), else product.price (populated on user cart), else item.productPrice
+      let price = item?.price ?? item?.product?.price ?? item?.productPrice ?? 0;
+
+      // If price is a string, strip non-numeric chars like currency symbols or commas
+      if (typeof price === 'string') {
+        price = price.replace(/[^0-9.-]+/g, '');
+      }
+
+      price = Number(price) || 0;
+      const qty = Number(item?.quantity || item?.qty) || 0;
       return total + price * qty;
     }, 0);
   };
 
   const getCartItemsCount = () =>
-    cartItems.reduce((sum, i) => sum + (i.quantity || 0), 0);
+    cartItems.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
 
   const syncGuestCart = async () => {
     if (user && cartItems.length > 0) {
