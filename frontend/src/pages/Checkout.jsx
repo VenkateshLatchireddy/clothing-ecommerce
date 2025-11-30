@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { ordersAPI } from "../services/api";
 
 const Checkout = () => {
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { cartItems, getCartTotal, clearCart, syncGuestCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -54,6 +54,7 @@ const Checkout = () => {
     setError("");
 
     try {
+      // Try placing the order
       const res = await ordersAPI.createOrder({ shippingAddress: shipping });
 
       if (res.data.success) {
@@ -61,7 +62,30 @@ const Checkout = () => {
         navigate(`/order/${res.data.order._id}`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Order failed. Try again.");
+      // If server returns 'Cart is empty' try syncing guest cart then retry once
+      const message = err.response?.data?.message || err.message || 'Order failed. Try again.';
+      if (message && message.toLowerCase().includes('cart is empty') && user) {
+        setError('Attempting to sync cart and retry order...');
+        try {
+          await syncGuestCart();
+          const res2 = await ordersAPI.createOrder({ shippingAddress: shipping });
+          if (res2.data.success) {
+            await clearCart();
+            navigate(`/order/${res2.data.order._id}`);
+            return;
+          }
+        } catch (retryErr) {
+          console.error('Retry after sync failed:', retryErr);
+          setError(retryErr.response?.data?.message || 'Order failed after syncing.');
+          return;
+        }
+      }
+      if (err.response?.status === 404) {
+        setError('Server API not found (404) — verify VITE_API_URL and backend availability.');
+        console.warn('API 404 on createOrder; check VITE_API_URL and backend hosting');
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }

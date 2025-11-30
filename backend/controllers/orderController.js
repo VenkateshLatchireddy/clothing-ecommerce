@@ -12,6 +12,7 @@ const createOrder = async (req, res) => {
 
     // Get user's cart - FIXED: using req.userId instead of req.user.id
     const cart = await Cart.findOne({ user: req.userId }).populate('items.product');
+    console.log('🔍 createOrder for user:', req.userId, 'cartItems:', cart?.items?.length || 0);
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,

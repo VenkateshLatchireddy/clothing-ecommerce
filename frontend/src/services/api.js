@@ -15,6 +15,11 @@ if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
   }
 }
 
+// Warn if running in production without VITE_API_URL set; this likely causes API calls to hit the frontend origin and 404
+if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
+  console.warn('⚠️ VITE_API_URL is not set in production. API requests may fail; set VITE_API_URL to your backend base URL.');
+}
+
 console.log('🔗 API URL:', API_URL); // Debug log
 
 const api = axios.create({
@@ -51,10 +56,13 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    const url = error.config?.url;
+    const status = error.response?.status;
+    const data = error.response?.data;
     console.error('❌ API Error:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message
+      url,
+      status,
+      data
     });
     
     if (error.response?.status === 401) {
