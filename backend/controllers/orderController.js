@@ -59,6 +59,7 @@ const createOrder = async (req, res) => {
     }
 
     // Create order - FIXED: using req.userId
+    const startTime = Date.now();
     const order = await Order.create({
       user: req.userId,
       items: orderItems,
@@ -66,25 +67,36 @@ const createOrder = async (req, res) => {
       shippingAddress
     });
 
-    // Clear cart
-    cart.items = [];
-    await cart.save();
-
-    // Populate order for email
-    const populatedOrder = await Order.findById(order._id).populate('user');
-
-    // Send confirmation email
+    // Clear cart (server-side)
     try {
-      await sendOrderEmail(populatedOrder);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Don't fail the order if email fails
+      cart.items = [];
+      await cart.save();
+    } catch (saveErr) {
+      console.error('Failed to clear cart after order creation:', saveErr);
     }
 
+    // Immediately respond to client with created order (without waiting for email population)
     res.status(201).json({
       success: true,
-      order: populatedOrder
+      order
     });
+    console.log('✅ Order created and response sent for orderId:', order._id);
+
+    // Continue background tasks asynchronously (do not block client response)
+    (async () => {
+      try {
+        const populatedOrder = await Order.findById(order._id).populate('user');
+        try {
+          await sendOrderEmail(populatedOrder);
+        } catch (emailError) {
+          console.error('Email sending failed (background):', emailError);
+        }
+      } catch (bgError) {
+        console.error('Background tasks after order creation failed:', bgError);
+      } finally {
+        console.log(`createOrder processed for user ${req.userId} in ${Date.now() - startTime}ms`);
+      }
+    })();
   } catch (error) {
     console.error('Create order error:', error);
     res.status(500).json({
