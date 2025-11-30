@@ -1,14 +1,12 @@
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 
-let resend = null;
-
-// Only initialize Resend in production (Render / Vercel)
+// Initialize SendGrid only in production
 if (process.env.NODE_ENV === "production") {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn("⚠️ RESEND_API_KEY missing in production");
+  if (!process.env.SENDGRID_API_KEY) {
+    console.error("❌ SENDGRID_API_KEY missing in production");
   } else {
-    resend = new Resend(process.env.RESEND_API_KEY);
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   }
 }
 
@@ -16,41 +14,37 @@ export const sendOrderEmail = async (order) => {
   try {
     const isProduction = process.env.NODE_ENV === "production";
 
-    console.log("📨 Email Mode:", isProduction ? "Resend (Production)" : "Gmail SMTP (Localhost)");
+    console.log("📨 Email Mode:", isProduction ? "SendGrid (Production)" : "Gmail SMTP (Localhost)");
 
     // ------------------------------------------------------------
-    // 🔥 1. PRODUCTION (RENDER, VERCEL) → RESEND
+    // 🔥 1. PRODUCTION (RENDER / VERCEL) → SENDGRID API
     // ------------------------------------------------------------
     if (isProduction) {
-      if (!resend) {
-        console.error("❌ Resend not initialized");
-        return { success: false };
-      }
+      const msg = {
+        to: order.user.email,
+        from: process.env.EMAIL_FROM, // must match verified Gmail
+        subject: `Order Confirmation - #${order._id}`,
+        html: generateEmailHtml(order),
+      };
 
       try {
-        await resend.emails.send({
-          from: process.env.EMAIL_FROM,
-          to: order.user.email,
-          subject: `Order Confirmation - #${order._id}`,
-          html: generateEmailHtml(order),
-        });
-
-        console.log("✅ Resend email sent successfully!");
+        await sgMail.send(msg);
+        console.log("✅ SendGrid email sent successfully!");
         return { success: true };
       } catch (error) {
-        console.error("❌ Resend email error:", error);
+        console.error("❌ SendGrid email error:", error);
         return { success: false, reason: error.message };
       }
     }
 
     // ------------------------------------------------------------
-    // 🔥 2. LOCALHOST → GMAIL SMTP
+    // 🔥 2. LOCALHOST → GMAIL SMTP (Nodemailer)
     // ------------------------------------------------------------
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
 
     if (!emailUser || !emailPass) {
-      console.warn("⚠️ Missing EMAIL_USER or EMAIL_PASS in local env");
+      console.warn("⚠️ Missing EMAIL_USER or EMAIL_PASS for local SMTP");
       return { success: false };
     }
 
@@ -78,7 +72,6 @@ export const sendOrderEmail = async (order) => {
   }
 };
 
-
 // ------------------------------------------------------------
 // ⭐ HTML TEMPLATE
 // ------------------------------------------------------------
@@ -105,6 +98,6 @@ const generateEmailHtml = (order) => `
       </div>
     `).join("")}
 
-    <p style="margin-top: 20px;">We’ll notify you when your order ships.</p>
+    <p style="margin-top: 20px;">We will notify you when your order ships.</p>
   </div>
 `;
