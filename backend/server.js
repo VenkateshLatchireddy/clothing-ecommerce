@@ -10,20 +10,51 @@ import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 
 import errorHandler from './middleware/errorHandler.js';
+import connectDB from './config/db.js';
 
 dotenv.config();
 
 const app = express();
 
 // Middleware - Updated for production
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://clothing-ecommerce-dusky.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://your-frontend-app.vercel.app', // Replace with your actual Vercel domain
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      console.warn('⚠️ CORS: Blocking request from origin:', origin);
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
+
+// Respond to preflight requests
+app.options('*', cors({ origin: allowedOrigins }));
+
+// Optional request logging for development and debug of production issues
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log('📥 Incoming request:', req.method, req.url);
+    next();
+  });
+}
+// Log origin on each request for debugging CORS
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) console.log('🔎 Incoming origin:', origin);
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -94,33 +125,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB with better error handling
-const connectDB = async () => {
-  try {
-    console.log('🔗 Connecting to MongoDB...');
-    
-    if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is not defined in environment variables');
-    }
-    
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
-    
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    console.log('\n💡 Troubleshooting tips:');
-    console.log('1. Check MONGO_URI in environment variables');
-    console.log('2. Verify MongoDB Atlas cluster is running');
-    console.log('3. Check IP whitelist in MongoDB Atlas');
-    console.log('4. Verify database user credentials');
-    process.exit(1);
-  }
-};
+// Use central connectDB so we can reuse the fallback settings in config/db.js
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

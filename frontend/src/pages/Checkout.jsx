@@ -81,8 +81,10 @@ const Checkout = () => {
         }
       }
       if (err.response?.status === 404) {
-        setError('Server API not found (404) — verify VITE_API_URL and backend availability.');
-        console.warn('API 404 on createOrder; check VITE_API_URL and backend hosting');
+        // Construct full attempted URL for debugging
+        const attempted = (err.config?.baseURL || '') + (err.config?.url || '');
+        setError(`Server API not found (404) — verify VITE_API_URL and backend availability. Attempted: ${attempted}`);
+        console.warn('API 404 on createOrder; attempted URL:', attempted);
       } else {
         setError(message);
       }

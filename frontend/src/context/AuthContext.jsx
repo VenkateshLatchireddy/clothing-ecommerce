@@ -93,6 +93,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('❌ Login request failed:', error);
+      if (error.response) {
+        console.error('❌ Login response body:', error.response.data);
+      }
       const backendError = error.response?.data?.message;
       
       return {

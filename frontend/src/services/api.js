@@ -7,17 +7,9 @@ import { getAuthItem, clearAuthStorageBoth } from '../utils/authStorage';
 const defaultDev = 'http://localhost:5000';
 let API_URL = import.meta.env.VITE_API_URL || defaultDev;
 if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
-  try {
-    // Use same origin for API in production if it's co-located
-    API_URL = `${window.location.origin}`;
-  } catch (err) {
-    API_URL = defaultDev;
-  }
-}
-
-// Warn if running in production without VITE_API_URL set; this likely causes API calls to hit the frontend origin and 404
-if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
-  console.warn('⚠️ VITE_API_URL is not set in production. API requests may fail; set VITE_API_URL to your backend base URL.');
+  // Fallback to Render backend URL if Vite env not configured during build
+  API_URL = 'https://clothing-ecommerce-r3jy.onrender.com';
+  console.warn('⚠️ VITE_API_URL is not set in production build; falling back to Render backend URL. Set VITE_API_URL in Vercel to avoid rebuild hardcoding.');
 }
 
 console.log('🔗 API URL:', API_URL); // Debug log
@@ -40,6 +32,15 @@ api.interceptors.request.use(
     } else {
       console.log('⚠️ No token found for request');
     }
+
+    // Log the full URL that will be called for debugging (baseURL + url)
+    try {
+      const base = config.baseURL || API_URL;
+      const path = config.url || '';
+      console.log('📡 API Request:', base + path);
+    } catch (e) {
+      // ignore
+    }
     
     return config;
   },
@@ -57,12 +58,15 @@ api.interceptors.response.use(
   },
   (error) => {
     const url = error.config?.url;
+    const base = error.config?.baseURL || API_URL;
     const status = error.response?.status;
     const data = error.response?.data;
+    const fullUrl = `${base || ''}${url || ''}`;
     console.error('❌ API Error:', {
-      url,
+      url: fullUrl,
       status,
-      data
+      data,
+      headers: error.config?.headers
     });
     
     if (error.response?.status === 401) {

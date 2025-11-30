@@ -46,6 +46,7 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('🔐 Submitting login for', formData.email);
       const result = await login(formData.email, formData.password);
       if (result.success) {
         await syncGuestCart();
@@ -54,7 +55,9 @@ const Login = () => {
         setError(result.message);
       }
     } catch (error) {
-      setError('An error occurred during login');
+      console.error('Login request failed:', error);
+      const serverMsg = error?.response?.data?.message || error?.message || 'An error occurred during login';
+      setError(serverMsg);
     } finally {
       setLoading(false);
     }

@@ -82,11 +82,13 @@ export const loginUser = async (req, res) => {
     }
 
     const { email, password } = req.body;
+    console.log('🔐 Login attempt for email:', email);
 
     // Find user and include password for verification
     const user = await User.findOne({ email }).select('+password');
     
     if (user && (await user.matchPassword(password))) {
+      console.log('✅ Valid credentials for', email);
       // Generate token
       const token = generateToken(user._id);
 
@@ -100,6 +102,7 @@ export const loginUser = async (req, res) => {
         token: token // ✅ Make sure this is included!
       });
     } else {
+      console.warn('❌ Invalid credentials for', email);
       res.status(401).json({
         success: false,
         message: 'Invalid email or password'
