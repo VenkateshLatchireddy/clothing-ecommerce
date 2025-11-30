@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import debugRoutes from './routes/debugRoutes.js';
 
 import errorHandler from './middleware/errorHandler.js';
 import connectDB from './config/db.js';
@@ -64,6 +65,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/debug', debugRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

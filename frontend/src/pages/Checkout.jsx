@@ -89,7 +89,7 @@ const Checkout = () => {
         console.warn('API 404 on createOrder; attempted URL:', attempted);
       } else if (err.response?.status === 400) {
         // Show full details for 400: include the message and any additional data
-        const extra = err.response?.data?.details || JSON.stringify(err.response?.data);
+        const extra = err.response?.data?.details || err.response?.data?.message || JSON.stringify(err.response?.data);
         setError(`${message}${extra ? ' — ' + extra : ''}`);
       } else {
         setError(message);

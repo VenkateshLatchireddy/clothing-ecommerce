@@ -36,6 +36,13 @@ const createOrder = async (req, res) => {
 
     for (const item of cart.items) {
       const product = item.product;
+      if (!product) {
+        console.warn('⚠️ createOrder: product reference missing for cart item', item);
+        return res.status(400).json({
+          success: false,
+          message: `Product not found for cart item: productId=${item.product}`
+        });
+      }
       const itemTotal = product.price * item.quantity;
       totalPrice += itemTotal;
 
@@ -79,7 +86,7 @@ const createOrder = async (req, res) => {
     console.error('Create order error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while creating order'
+      message: `Server error while creating order: ${error.message}`
     });
   }
 };
