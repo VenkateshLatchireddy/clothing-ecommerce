@@ -1,14 +1,12 @@
 import axios from 'axios';
 
-// Use environment variable for API URL, fallback to localhost for development
+// Remove /api from here - backend URL only
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-console.log('🔗 API URL:', API_URL); // For debugging
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL,  // Remove /api from here
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 10000,
 });
 
 // Request interceptor to add auth token if available
@@ -32,17 +30,11 @@ api.interceptors.response.use(
     console.error('API Error:', error.response?.data || error.message);
     
     if (error.response?.status === 401) {
-      // Unauthorized - clear local storage and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Only redirect if not already on login page
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
-    }
-    
-    if (error.code === 'ECONNABORTED') {
-      console.error('Request timeout - server might be down');
     }
     
     return Promise.reject(error);
@@ -50,32 +42,29 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (userData) => api.post('/api/auth/register', userData),
-  login: (credentials) => api.post('/api/auth/login', credentials),
-  logout: () => api.post('/api/auth/logout'),
-  getMe: () => api.get('/api/auth/me'),
+  register: (userData) => api.post('/api/auth/register', userData),  // Keep /api here
+  login: (credentials) => api.post('/api/auth/login', credentials),  // Keep /api here
+  logout: () => api.post('/api/auth/logout'),  // Keep /api here
+  getMe: () => api.get('/api/auth/me'),  // Keep /api here
 };
 
 export const productsAPI = {
-  getProducts: (params = {}) => api.get('/api/products', { params }),
-  getProduct: (id) => api.get(`/api/products/${id}`),
+  getProducts: (params = {}) => api.get('/api/products', { params }),  // Keep /api here
+  getProduct: (id) => api.get(`/api/products/${id}`),  // Keep /api here
 };
 
 export const cartAPI = {
-  getCart: () => api.get('/api/cart'),
-  addToCart: (item) => api.post('/api/cart/add', item),
-  updateCart: (item) => api.put('/api/cart/update', item),
-  removeFromCart: (item) => api.delete('/api/cart/remove', { data: item }),
-  clearCart: () => api.delete('/api/cart/clear'),
+  getCart: () => api.get('/api/cart'),  // Keep /api here
+  addToCart: (item) => api.post('/api/cart/add', item),  // Keep /api here
+  updateCart: (item) => api.put('/api/cart/update', item),  // Keep /api here
+  removeFromCart: (item) => api.delete('/api/cart/remove', { data: item }),  // Keep /api here
+  clearCart: () => api.delete('/api/cart/clear'),  // Keep /api here
 };
 
 export const ordersAPI = {
-  createOrder: (orderData) => api.post('/api/orders', orderData),
-  getOrders: () => api.get('/api/orders'),
-  getOrder: (id) => api.get(`/api/orders/${id}`),
+  createOrder: (orderData) => api.post('/api/orders', orderData),  // Keep /api here
+  getOrders: () => api.get('/api/orders'),  // Keep /api here
+  getOrder: (id) => api.get(`/api/orders/${id}`),  // Keep /api here
 };
-
-// Test connection to backend
-export const testConnection = () => api.get('/api/health');
 
 export default api;
