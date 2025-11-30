@@ -40,6 +40,25 @@ A full-stack MERN e-commerce application for clothing products.
 - ✅ Fully deployed backend + frontend
 
 
+📧 Email Notification Note (Important)
+
+After placing a successful order, an Order Confirmation Email will be sent to your registered email address.
+
+
+The email  land in the Spam folder in Gmail.
+Please check your Spam/Junk folder for the order details email.
+
+    The email includes:
+
+    Order ID
+
+    Order date
+
+    Product details
+
+    Sizes & quantities
+
+    Total amount
 
 Kids
 
