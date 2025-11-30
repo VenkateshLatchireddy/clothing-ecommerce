@@ -10,8 +10,8 @@ const createOrder = async (req, res) => {
   try {
     const { shippingAddress } = req.body;
 
-    // Get user's cart
-    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
+    // Get user's cart - FIXED: using req.userId instead of req.user.id
+    const cart = await Cart.findOne({ user: req.userId }).populate('items.product');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
@@ -37,9 +37,9 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // Create order
+    // Create order - FIXED: using req.userId
     const order = await Order.create({
-      user: req.user.id,
+      user: req.userId,
       items: orderItems,
       totalPrice,
       shippingAddress
@@ -78,7 +78,8 @@ const createOrder = async (req, res) => {
 // @access  Private
 const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id })
+    // FIXED: using req.userId instead of req.user.id
+    const orders = await Order.find({ user: req.userId })
       .sort({ orderDate: -1 })
       .populate('items.product');
 
@@ -109,8 +110,8 @@ const getOrderById = async (req, res) => {
       });
     }
 
-    // Check if order belongs to user
-    if (order.user.toString() !== req.user.id) {
+    // Check if order belongs to user - FIXED: using req.userId
+    if (order.user.toString() !== req.userId) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to view this order'
