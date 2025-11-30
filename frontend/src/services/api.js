@@ -79,15 +79,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log('🔒 401 Unauthorized - clearing auth data');
       // Clear all auth data
-      // Clear both storages for 401 condition
       clearAuthStorageBoth();
-      
-      // Only redirect if not already on login page
-      if (!window.location.pathname.includes('/login')) {
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1000);
-      }
+      // Do NOT auto-redirect to login on ANY 401 here — some 401s are expected from background checks.
+      // Redirects should be handled by the UI on protected routes (e.g., Checkout, Cart).
     }
     
     return Promise.reject(error);
